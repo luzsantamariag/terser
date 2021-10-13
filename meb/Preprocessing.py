@@ -109,7 +109,6 @@ class Preprocessing:
                                         activity = v1[eTimestamp]['activity']
                                         longitude = v1[eTimestamp]['longitude']
                                         latitude = v1[eTimestamp]['latitude']
-                                        altitude = v1[eTimestamp]['altitude']
                                         
                                         hr.update({hrTimestamp: {
                                                 'imei': k,
@@ -118,8 +117,7 @@ class Preprocessing:
                                                 'activity': activity,
                                                 'hr': heartRate,
                                                 'longitude': longitude,
-                                                'latitude': latitude,
-                                                'altitude': altitude
+                                                'latitude': latitude
                                                                  }}); 
                                         find = True   # Label the emotion in the instances of time series of the heart rate
                                         break;
