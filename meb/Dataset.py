@@ -27,11 +27,11 @@ class Dataset:
         """ Default constructor     
         """   
         self.mebData                     = {}
-        self.parentDir                   = 'yourdirectory'                  # Project directory
-        self.firebase                    = 'yourServiceAccountKey.json'     # JSON file with the authenticate parameters to firebase
-        self.database                    = 'https://yourdb.firebaseio.com/' # Firebase project URL
-        self.mongo_client                = 'mongodb://localhost:27017'      # MongoDB server URL
-        self.mongo_db                    = 'terser'                         # MongoDB database name
+        self.parentDir                   = './meb'                           # Project directory
+        self.firebase                    = 'server/ServiceAccountKey.json'   # JSON file with the authenticate parameters to firebase
+        self.database                    = 'https://project.firebaseio.com/' # Firebase project URL
+        self.mongo_client                = 'mongodb://localhost:27017'       # MongoDB server URL
+        self.mongo_db                    = 'terser'                          # MongoDB database name
         self.firebase_collection         = 'myemotionband'      # Emotion, activity, and location collection obtained from firebase database.
         self.hr_collection               = 'hrband'             # Heart rate collection obtained from participant's wearables devices.
         self.tagged_collection           = 'mebTag'             # Labeled Heart rate collection with emotions and unlabeled heart rate records.
@@ -381,25 +381,21 @@ class Dataset:
         -------
         None.
         """
+        self.getConnectionMongoDB()    # Create a client instance of the MongoClient class   
+        collectionER = self.dataBaseMongo[er_collection] # Emotion recognition collection
         if participant != -1 and classType == 0: 
-            self.getConnectionMongoDB()    # Create a client instance of the MongoClient class   
-            self.collectionER = self.dataBaseMongo[er_collection] # Emotion recognition collection
+            headers = ["imei","emotion","duration","slices"]                   
+            erData = []
             
-            self.eRpred = eRprediction
-            
-            headers = ["imei","emotion","duration","slices"]
-                   
-            # Emotion list
-            self.erData = []
-            for i in range(len(self.eRpred[6])):
-                for j in range (len(self.eRpred[9])):
-                    if self.eRpred[6][i] == self.eRpred[9][j][1]:
-                        duration = round(float(self.eRpred[9][j][2]/60), 2)    # Emotion duration in seconds 
+            for i in range(len(eRprediction[6])):
+                for j in range (len(eRprediction[9])):
+                    if eRprediction[6][i] == eRprediction[9][j][1]:
+                        duration = round(float(eRprediction[9][j][2]/60), 2)    # Emotion duration in seconds 
                         break
     
-                self.zipER = dict(zip(headers, [int(participant), self.eRpred[6][i],
-                                                duration, int(self.eRpred[8][i])]))                      
-                self.collectionER.insert_one(self.zipER)
-                self.erData.append(self.zipER)  
+                zipER = dict(zip(headers, [int(participant), eRprediction[6][i],
+                                                duration, int(eRprediction[8][i])]))                      
+                collectionER.insert_one(zipER)
+                erData.append(zipER)  
     
             self.client.close()  

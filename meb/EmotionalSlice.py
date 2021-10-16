@@ -157,7 +157,7 @@ class EmotionalSlice:
                     self.ots = self.ts
                     self.addSyntheticData()
                 else:
-                    self.slicePlot()               # It plots an emotional slicing with a fixed size of HR instances. 
+                    #self.slicePlot()               # It plots an emotional slicing with a fixed size of HR instances. 
                     self.ohr = []
                     self.ots = []
                                 
@@ -367,7 +367,7 @@ class EmotionalSlice:
         plt.ylabel('Heart rate', fontsize = 20)
         plt.legend(['data', 'Fourier method resampled'], loc='best', prop={'size': 22})
         plt.savefig(self.plotDir + 'hr_resampled_'+ str(self.slicesCounter) + '_' + str(self.previous[0]) + '.svg')
-        plt.close()
+        plt.close()       
 
 #%% slicePlot
 
@@ -389,7 +389,7 @@ class EmotionalSlice:
         plt.ylabel('Heart rate', fontsize = 20)
         plt.plot(x, y)
         plt.savefig(self.plotDir + 'hr_'+ str(self.slicesCounter) + '_' + str(self.previous[0]) + '.svg')
-        plt.close()
+        plt.close()     
 
     #%% Categorical imei
             

@@ -60,7 +60,7 @@ class EmotionBalanced:
             #Is there an experiment participant with an emotional state label?
             
             if classType == 0:            
-                if features[i][0] == self.participant and features[i][18]:
+                if features[i][0] == self.participant and features[i][8] != 'neutral' and features[i][18]:
                     hr_tmp = features[i][18].copy()                       
                     hr_tmp.append(features[i][7])  # Categorical emotion  
                     hr_tmp.append(features[i][6])  # Categorical activity        
@@ -69,8 +69,8 @@ class EmotionBalanced:
                     hr_tmp.append(features[i][8])  # Emotion   
                     hr_slice.append(hr_tmp)
                 
-                # Are there experiment participants with the same emotional state label?   
-                if self.participant == -1 and  features[i][18]:   
+                # Are there experiment participants with the same emotional state label? 
+                if self.participant == -1 and  features[i][8] != 'neutral' and features[i][18]:   
                     hr_tmp = features[i][18].copy()                                                       
                     hr_tmp.append(features[i][7])  # Categorical emotion  
                     hr_tmp.append(features[i][6])  # Categorical activity        
