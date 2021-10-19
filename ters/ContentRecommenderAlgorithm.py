@@ -17,8 +17,6 @@ import numpy as np
 from haversine import haversine
 from difflib import SequenceMatcher
 from scipy import spatial
-# pip install fuzzywuzzy
-# pip install python-Levenshtein
 from fuzzywuzzy import fuzz
 import heapq as hq
 
@@ -171,15 +169,6 @@ class ContentRecommenderAlgorithm(AlgoBase):
         te1 = experience[hotel1]
         te2 = experience[hotel2]
         result = 1 - spatial.distance.cosine(te1, te2)
-        # sumxx, sumxy, sumyy = 0, 0, 0
-        # for te in range(len(te1)):
-        #     x = te1[te]
-        #     y = te2[te]
-        #     sumxx += x * x
-        #     sumyy += y * y
-        #     sumxy += x * y 
-        # result = sumxy/mt.sqrt(sumxx*sumyy)
-        
         return result
 
 #%%
@@ -230,9 +219,6 @@ class ContentRecommenderAlgorithm(AlgoBase):
         estimatedRating : float
             Estimated rating
         """
-        
-        # iid = self.trainset.to_inner_iid(item)
-        # uid = self.trainset.to_inner_uid(user)
         print ('user: ' + str(user) + ' item: ' + str(item)) 
         
         if not (self.trainset.knows_user(user) and self.trainset.knows_item(item)):

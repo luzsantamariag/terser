@@ -90,7 +90,6 @@ class RecommenderPlots:
         fig, ax = plt.subplots(figsize = (10,5))
         ax.plot(algorithmName, rmse, label='RMSE', marker='*', linewidth=2) 
         ax.plot(algorithmName, mae, label='MAE', marker='*', linewidth=2)
-        #ax.xaxis.set_major_locator(MaxNLocator(integer=True))
         plt.title('Performance of recommendation algorithms', loc='center', fontsize=15)
         plt.xlabel('Algorithms', fontsize=15)
         plt.ylabel('metric result', fontsize=15)
@@ -101,7 +100,6 @@ class RecommenderPlots:
         
         fig, ax = plt.subplots(figsize = (10,5))
         ax.plot(algorithmName, mae, label='MAE', marker='*', linewidth=2)
-        #ax.xaxis.set_major_locator(MaxNLocator(integer=True))
         plt.title('Performance of recommendation algorithms', loc='center', fontsize=15)
         plt.xlabel('Algorithms', fontsize=15)
         plt.ylabel('MAE', fontsize=15)
@@ -111,7 +109,6 @@ class RecommenderPlots:
         
         fig, ax = plt.subplots(figsize = (10,5))
         ax.plot(algorithmName, rmse, label='RMSE', marker='*', linewidth=2, color = '#e4722e') 
-        #ax.xaxis.set_major_locator(MaxNLocator(integer=True))
         plt.title('Performance of recommendation algorithms', loc='center', fontsize=15)
         plt.xlabel('Algorithms', fontsize=15)
         plt.ylabel('RMSE', fontsize=15)
@@ -140,4 +137,3 @@ class RecommenderPlots:
         plt.setp(ax.get_yticklabels(), rotation=45, ha="right", rotation_mode="anchor")
         bottom, top = ax.get_ylim()
         ax.set_ylim(bottom + 0.5, top - 0.5)         
-        #plt.savefig(self.figurePath + 'similarityMatrix.svg', format='svg') 

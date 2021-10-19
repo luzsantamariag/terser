@@ -23,7 +23,7 @@ class RecommenderData:
     and the users' reviews obtained through the OntoTouTra ontology. 
     """    
     
-    def __init__(self, mongo_client = 'mongodb://localhost:27017', mongo_db = 'meb', hotelTEPath = 'tourist/'):
+    def __init__(self, mongo_client = 'mongodb://localhost:27017', mongo_db = 'ters', hotelTEPath = 'tourist/'):
         """
         Default constructor
         Parameters
@@ -48,9 +48,9 @@ class RecommenderData:
 
         self.mongo_client = mongo_client           # MongoDb localhost URL
         self.mongo_db = mongo_db                   # MongoDB database name
-        self.sliced_anonymous_collection = 'mebSlicedAnonym'      # Sliced emotion and heart rate instances collection and anonymous participants. 
-        self.er_collection               = 'emotionRecognition'   # It contains the emotion recognition results generated from the heart rate data and activities of each participant.
-        self.sliced_anonym_location_coll = 'mebSlicedLocationAnonym' # Sliced emotion and heart rate instances collection, anonymous participants, and location.
+        self.sliced_collection = 'mebSliced'       # Emotional slicing with HR instances collection of the participants. 
+        self.er_collection               = 'emotionRecognition' # It contains the emotion recognition results generated from the HR data
+        self.sliced_location_collection = 'mebSlicedLocation' #  Emotional slicing and location collection.
         
         self.tags = {
             'activity': {'tag': 'Actividades'},
@@ -274,7 +274,7 @@ class RecommenderData:
         # Load database and collection instances
         self.dataBaseMongo = self.client[self.mongo_db]
         # Load myemotionband collection
-        self.locationCollection = self.dataBaseMongo[self.sliced_anonymous_collection]
+        self.locationCollection = self.dataBaseMongo[self.sliced_collection]
         self.location = pd.DataFrame(list(self.locationCollection.find()))         
         self.emotionCollection = self.dataBaseMongo[self.er_collection]   
         self.emotion = pd.DataFrame(list(self.emotionCollection.find()))  
@@ -285,7 +285,7 @@ class RecommenderData:
 
     def getUserLocation(self):  
         """
-        It gets the anonymous participants' location data into emotion slices collection.
+        It gets the participants' location data into emotion slices collection.
         """
         #self.getCoordinate()
         self.location['coord'] = [', '.join(str(x) for x in y) for y in map(tuple, self.location[['latitude', 'longitude']].values)]        
@@ -305,8 +305,8 @@ class RecommenderData:
         """
         Create a collection with the participant's location.
         """
-        # Load sliced_anonym_location_coll collection
-        self.locCollection = self.dataBaseMongo[self.sliced_anonym_location_coll]
+        # Load sliced_location_collection
+        self.locCollection = self.dataBaseMongo[self.sliced_location_collection]
         data_json = json.loads(self.location.to_json(orient='records'))
         self.locCollection.insert_many(data_json) 
         self.client.close()

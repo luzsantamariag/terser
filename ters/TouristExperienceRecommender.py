@@ -37,7 +37,7 @@ class TouristExperienceRecommender:
         self.profilePath = 'participant/' # Participant directory path  
         self.hotelTEPath = 'tourist/'     # Directory path of hotels' Booking dataset  
         self.mongo_client = 'mongodb://localhost:27017' # MongoDb localhost URL
-        self.mongo_db = 'meb'                           # MongoDB database name
+        self.mongo_db = 'ters'                           # MongoDB database name
         
         # Load up common dataset for the recommender algorithms
         self.rd, self.evaluationData, self.rankings = self.loadTERSData()
@@ -121,8 +121,8 @@ class TouristExperienceRecommender:
         self.evaluator.AddAlgorithm(SVDAlgorithm, "SVD")
         
         # Throw in an Singular Value Descomposition recommender
-        # SVDppAlgorithm = SVDpp(random_state=10)
-        # self.evaluator.AddAlgorithm(SVDppAlgorithm, "SVDpp")
+        SVDppAlgorithm = SVDpp(random_state=10)
+        self.evaluator.AddAlgorithm(SVDppAlgorithm, "SVDpp")
         
         algorithms = self.evaluator.algorithms   # Algorithms evaluated list
         algorithms[0].GetName()

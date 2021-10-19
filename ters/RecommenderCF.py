@@ -36,7 +36,7 @@ class RecommenderCF:
 #%% shuffle method 
         
     def getDataRec(self):
-        # 1. Perform some preprocessing to encode users and hotels as integer indices.
+        # Perform some preprocessing to encode users and hotels as integer indices.
         mode = pd.options.mode.chained_assignment
         pd.options.mode.chained_assignment = None
         user = self.hotelRating["userId"].unique().tolist()
@@ -83,7 +83,7 @@ class RecommenderCF:
         self.model.compile(optimizer = Adam(lr=0.001), 
                             loss = loss_val, metrics = metric)      
         
-        # 4. Train the model based on the data split
+        # Train the model based on the data split
         history = self.model.fit(
             x = x_train, y = y_train, batch_size=64, epochs=10, 
             verbose=1, validation_data = (x_test, y_test)
@@ -129,8 +129,6 @@ class RecommenderCF:
 #%% plotMetrics method 
         
     def plotMetrics(self, figurePath, name, history, title):
-        # 4. Plot training and validation loss
-        # *************** Training and testing MAE Plot    *************** 
 
         fig, ax = plt.subplots(figsize = (10,5))
         ax.plot(history.epoch, history.history[name], label='train')

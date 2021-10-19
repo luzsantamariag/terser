@@ -36,7 +36,7 @@ class RecommenderCF_CNN:
 #%% shuffle method 
         
     def getDataRec(self):
-        # 1. Perform some preprocessing to encode users and hotels as integer indices.
+        # Perform some preprocessing to encode users and hotels as integer indices.
         # Method for creating a new column with user number
         mode = pd.options.mode.chained_assignment
         pd.options.mode.chained_assignment = None
@@ -87,7 +87,6 @@ class RecommenderCF_CNN:
 #%% recommender method
     
     def recommender(self):
-    #def embedding_model(hotelRating, embedding_factor):
         # Each instance will consist of two inputs: a single user id, and a single movie id
         user = Input(shape=(1,), name='user_id')
         hotel = Input(shape=(1,), name='hotel')
@@ -97,11 +96,10 @@ class RecommenderCF_CNN:
         
         # Concatenate the embeddings (and remove the useless extra dimension)
         x = Concatenate()([userEmbedded, hotelEmbedded])
-        x = Conv1D(filters = 128, kernel_size = 1) (x) # filters = 32
+        x = Conv1D(filters = 128, kernel_size = 1) (x) 
         x = MaxPooling1D(pool_size = 1) (x)   
         x = Dropout(self.dropout_rate)(x)
-        x = Dense(64, kernel_initializer = 'he_normal')(x)   # 10 units
-        #x = Dropout(self.dropout_rate)(x)
+        x = Dense(64, kernel_initializer = 'he_normal')(x)  
         x = Dense(1, activation = 'relu', name = 'prediction')(x)
         # Create the recommendation model
         model = Model(inputs = [user, hotel], outputs = x)
@@ -165,9 +163,7 @@ class RecommenderCF_CNN:
 #%% plotMetrics method 
         
     def plotMetrics(self, figurePath, name, history, title):
-        # 4. Plot training and validation loss
-        # *************** Training and testing MAE Plot    *************** 
-
+        
         fig, ax = plt.subplots(figsize = (10,5))
         ax.plot(history.epoch, history.history[name], label='train')
         ax.plot(history.epoch, history.history['val_'+ name], label='test')
@@ -196,8 +192,6 @@ class RecommenderCF_CNN:
         plt.savefig(figurePath + 'loss_'+ name + '_CF_CNN.svg', format='svg') 
         plt.show()   
 
-        # orange: ff7f0eff
-        # blue: 1f77b4ff
         fig, ax = plt.subplots(figsize = (10,5))        
         plt.plot(history.history['loss'], "--", color = '#ff7f0eff', label = "Train loss")
         plt.plot(history.epoch, history.history[name], "--", color = '#1f77b4ff', label = "Train")
@@ -219,8 +213,6 @@ class RecommenderCF_CNN:
 #%% prediction method
 
     def prediction(self, user_id):
-        # Let us get a user and see the top recommendations.
-        # 5. Predict --- TEST 2 -----> adjust with hotel and userId --> Liliana
         # Let us get a user and see the top recommendations.
 
         uidTest = self.user[user_id] 

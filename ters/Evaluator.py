@@ -11,12 +11,7 @@ from EvaluatedAlgorithm import EvaluatedAlgorithm
 
 
 class Evaluator:
-    
     """
-    It loads the datasets of tourist experiences of the Boyacá hotels, the reviews
-    of the users of the experiences lived in the hotels, the emotions felt, and the
-    geographical location. It splits the datasets into training and testing set 
-    to evaluate the recommendation algorithms.
     """
     
     algorithms = []
@@ -46,7 +41,7 @@ class Evaluator:
         None.
 
         """
-        print('Evaluator.AddAlgorithm: ' + str(name))  ### Original
+        print('Evaluator.AddAlgorithm: ' + str(name)) 
         alg = EvaluatedAlgorithm(algorithm, name)
         self.algorithms.append(alg)
 
@@ -65,15 +60,10 @@ class Evaluator:
         None.
 
         """
-        #print('Evaluator.Evaluate: TopN Metrics ' + str(doTopN))
-
         for algorithm in self.algorithms:  # algorithms --> EvaluatedAlgorithm(algorithm, name)
             print("Evaluating ", algorithm.GetName(), "...")
-            # dataset --> EvaluationData(dataset, rankings)
-            # algorithm.Evaluate --> EvaluatedAlgorithm.Evaluate
             self.results[algorithm.GetName()] = algorithm.Evaluate(self.dataset)  # original
           
- 
 #%%
     def TopNRecs(self, rd, testSubject='user', k=10):
         """
@@ -97,24 +87,18 @@ class Evaluator:
         
         for algo in self.algorithms:
             print("\nUsing recommender ", algo.GetName())
-            
-            # We train the recommender algorithm using the full, complete training set, 
-            # since we want the best recommendations we can get.
+
             print("\nBuilding recommendation model...")
             trainSet = self.dataset.GetFullTrainSet()
             algo.GetAlgorithm().fit(trainSet)
             
-            # We get an “anti-test set” for the user we’re interested in. All this does is produce a test data set of all of 
-            # the hotels that this user did not rate already, since we don’t want to recommend hotels the user has already seen.
             print("Computing recommendations...")
-            testSet = self.dataset.GetAntiTestSetForUser(testSubject)   # EvaluationData.GetAntiTestSetForUser(testSubject)
+            testSet = self.dataset.GetAntiTestSetForUser(testSubject)   
         
             predictions = algo.GetAlgorithm().test(testSet)
             predictionRecommendation.append(predictions)
             
             recommendations = []
-            # we can convert hotel ID’s into destinations that actually mean something for user, a user ID 
-            # that you want to get recommendations for, and how many recommendations you want to get.
             print ("\nWe recommend:")
             for userID, hotelID, actualRating, estimatedRating, _ in predictions:
                 hotel_ID = int(hotelID)
