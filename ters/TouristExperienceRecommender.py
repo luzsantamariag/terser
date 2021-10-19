@@ -43,7 +43,7 @@ class TouristExperienceRecommender:
         self.mongo_db = 'terser'                            # MongoDB database name
         self.endPoint = 'tourdata.org:3030/ds/query'        # OntoTouTra End-Point
         self.stateName = 'Boyacá'                           # Department name of Colombia
-        self.dataOrigin = 0  # Origin of the data about TE. 0 CSV files and 1 SPARQL queries.                               #                              
+        self.dataSource = 0  # Source of the data about TE. 0 CSV files and 1 SPARQL queries.                               #                              
         self.rd, self.evaluationData, self.rankings = self.loadTERSData()
         self.buildEvaluationData()
         self.evaluateRecommenderAlgoritm()
@@ -64,7 +64,8 @@ class TouristExperienceRecommender:
         hotelTEranking : dict
             Hotels' popularity ranks
         """    
-        rd = RecommenderData(self.mongo_client, self.mongo_db, self.hotelTEPath) 
+        rd = RecommenderData(self.mongo_client, self.mongo_db, self.hotelTEPath,
+                             self.endPoint, self.stateName, self.dataSource) 
         print ("Loading the users' emotion recognition and hotels' Booking datasets.")
     
         hotelTouristExp, hotelRating, hotelTEranking = rd.hotelRatingFilter()

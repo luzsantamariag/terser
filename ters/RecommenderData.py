@@ -23,7 +23,7 @@ class RecommenderData:
     
     def __init__(self, mongo_client = 'mongodb://localhost:27017', mongo_db = 'terser',
                  hotelTEPath = 'tourist/', endPoint = 'tourdata.org:3030/ds/query',
-                 stateName ='Boyacá', dataOrigin = 0):
+                 stateName ='Boyacá', dataSource = 0):
         """
         Default constructor
         Parameters
@@ -34,8 +34,13 @@ class RecommenderData:
             MongoDB Server
         mongo_db : string
             Database name
+        endPoint : String
+            DESCRIPTION. EndPoint's server name
+        stateName : String
+            DESCRIPTION. Department's name
+        dataSource : int
+            DESCRIPTION. Data's origin            
         """
-
         self.hotelPath = hotelTEPath + 'hotels.csv'     
         self.servicePath = hotelTEPath + 'services.csv'
         self.experiencePath = hotelTEPath + 'hotelExperiences.csv'
@@ -57,11 +62,11 @@ class RecommenderData:
             'happyQuadrant': {'tag': 'feliz'},
             }
         
-        self.getTERSData(endPoint, stateName, dataOrigin)
+        self.getTERSData(endPoint, stateName, dataSource)
 
 
 #%%
-    def getTERSData(self, endPoint, stateName, dataOrigin):
+    def getTERSData(self, endPoint, stateName, dataSource):
         """
         Gets data from Tourist Experiences from the OntoTouTra Ontology.
         Parameters
@@ -70,18 +75,18 @@ class RecommenderData:
             DESCRIPTION. EndPoint's server name
         stateName : String
             DESCRIPTION. Department's name
-        dataOrigin : int
+        dataSource : int
             DESCRIPTION. Data's origin
         Returns
         -------
         None.
         """
-        if dataOrigin == 0: # Are there CSV files of the TERS data?
+        if dataSource == 0: # Are there CSV files of the TERS data?
             self.hotel = pd.read_csv(self.hotelPath, sep = ",")
             self.service = pd.read_csv(self.servicePath, sep = ",")        
             self.reviews = pd.read_csv(self.reviewsPath, sep = ",")  
             
-        if dataOrigin == 1: # Is there a connection to an End Point to retrieve the TERS data?
+        if dataSource == 1: # Is there a connection to an End Point to retrieve the TERS data?
             ontology = OntoTouTraData(endPoint, stateName)
             self.hotel = ontology.getHotelData()
             self.service = ontology.getHotelService()
