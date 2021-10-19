@@ -11,7 +11,7 @@ Created on Mon Mar 30 19:58:25 2020
 import pandas as pd
 from pymongo import MongoClient          
 import json
-
+from OntoTouTraData import OntoTouTraData
 
 class RecommenderData:
     """ 
@@ -21,7 +21,9 @@ class RecommenderData:
     and the users' reviews obtained through the OntoTouTra ontology. 
     """    
     
-    def __init__(self, mongo_client = 'mongodb://localhost:27017', mongo_db = 'terser', hotelTEPath = 'tourist/'):
+    def __init__(self, mongo_client = 'mongodb://localhost:27017', mongo_db = 'terser',
+                 hotelTEPath = 'tourist/', endPoint = 'tourdata.org:3030/ds/query',
+                 stateName ='Boyacá', dataOrigin = 0):
         """
         Default constructor
         Parameters
@@ -38,12 +40,8 @@ class RecommenderData:
         self.servicePath = hotelTEPath + 'services.csv'
         self.experiencePath = hotelTEPath + 'hotelExperiences.csv'
         self.reviewsPath = hotelTEPath + 'reviews.csv'  
-        self.hotel = pd.read_csv(self.hotelPath, sep = ",")
-        self.service = pd.read_csv(self.servicePath, sep = ",")        
         self.touristExp = pd.read_csv(self.experiencePath, sep = ",")  
-        self.reviews = pd.read_csv(self.reviewsPath, sep = ",")         
         self.coordPath = hotelTEPath + 'coord.csv'
-
         self.mongo_client = mongo_client           # MongoDb localhost URL
         self.mongo_db = mongo_db                   # MongoDB database name
         self.sliced_collection          = 'mebSliced'       # Emotional slicing with HR instances collection of the experiment participants.         
@@ -58,7 +56,37 @@ class RecommenderData:
             'calmQuadrant': {'tag': 'calma'},
             'happyQuadrant': {'tag': 'feliz'},
             }
+        
+        self.getTERSData(endPoint, stateName, dataOrigin)
 
+
+#%%
+    def getTERSData(self, endPoint, stateName, dataOrigin):
+        """
+        Gets data from Tourist Experiences from the OntoTouTra Ontology.
+        Parameters
+        ----------
+        endPoint : String
+            DESCRIPTION. EndPoint's server name
+        stateName : String
+            DESCRIPTION. Department's name
+        dataOrigin : int
+            DESCRIPTION. Data's origin
+        Returns
+        -------
+        None.
+        """
+        if dataOrigin == 0: # Are there CSV files of the TERS data?
+            self.hotel = pd.read_csv(self.hotelPath, sep = ",")
+            self.service = pd.read_csv(self.servicePath, sep = ",")        
+            self.reviews = pd.read_csv(self.reviewsPath, sep = ",")  
+            
+        if dataOrigin == 1: # Is there a connection to an End Point to retrieve the TERS data?
+            ontology = OntoTouTraData(endPoint, stateName)
+            self.hotel = ontology.getHotelData()
+            self.service = ontology.getHotelService()
+            self.reviews = ontology.getHotelReview()
+            
 #%% 
     def getTouristExperience(self):
         """
@@ -133,7 +161,6 @@ class RecommenderData:
         )
         return result
            
-   
 #%% 
     def hotelRatingFilter(self):
         """
@@ -144,8 +171,6 @@ class RecommenderData:
         -------
         None.
         """
-        
-        #self.getOntotoutra()
         self.getTouristExperience()
         self.hotel['emotion'] = self.loadReviewEmotion('reviewScore')
         # Filter the hotels Dataframe by score and tourist experience. 

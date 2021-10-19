@@ -20,7 +20,15 @@ class OntoTouTraData():
     def __init__(self, endPoint = 'tourdata.org:3030/ds/query', stateName = 'Boyacá'):
         """
         Default constructor
+        Parameters
         ----------
+        endPoint : String
+            DESCRIPTION. EndPoint's server name
+        stateName : String
+            DESCRIPTION. Department's name
+        Returns
+        -------
+        None.
         """
         self._endPoint = endPoint
         self._stateName = stateName
