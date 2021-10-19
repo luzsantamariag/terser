@@ -94,7 +94,6 @@ class ContentRecommenderAlgorithm(AlgoBase):
                 self.similarities[priorRating, nextRating] = te * location * category * description                  
                 self.similarities[nextRating, priorRating] = self.similarities[priorRating, nextRating]
                 
-        return self
     
 #%%
     def computeDescriptionSimilarity(self, hotel1, hotel2, description):
@@ -169,6 +168,7 @@ class ContentRecommenderAlgorithm(AlgoBase):
         te1 = experience[hotel1]
         te2 = experience[hotel2]
         result = 1 - spatial.distance.cosine(te1, te2)
+        
         return result
 
 #%%
@@ -219,6 +219,9 @@ class ContentRecommenderAlgorithm(AlgoBase):
         estimatedRating : float
             Estimated rating
         """
+        
+        # iid = self.trainset.to_inner_iid(item)
+        # uid = self.trainset.to_inner_uid(user)
         print ('user: ' + str(user) + ' item: ' + str(item)) 
         
         if not (self.trainset.knows_user(user) and self.trainset.knows_item(item)):

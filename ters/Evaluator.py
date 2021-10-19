@@ -11,9 +11,13 @@ from EvaluatedAlgorithm import EvaluatedAlgorithm
 
 
 class Evaluator:
-    """
-    """
     
+    """
+    It loads the datasets of tourist experiences of the hotels, the reviews
+    of the users of the experiences lived in the hotels, the emotions felt, and the
+    geographical location. It splits the datasets into training and testing set 
+    to evaluate the recommendation algorithms.
+    """
     algorithms = []
     
     def __init__(self, dataset, rankings):
@@ -28,8 +32,7 @@ class Evaluator:
 #%% 
     def AddAlgorithm(self, algorithm, name):
         """
-        For each algorithm you want to compare – this creates an EvaluatedAlgorithm under the hood 
-        within the Evaluator, and adds it to a list internally called “algorithms”     
+        This creates an EvaluatedAlgorithm    
         Parameters
         ----------
         algorithm : object
@@ -48,9 +51,7 @@ class Evaluator:
 #%%                
     def Evaluate(self):        
         """
-        It evaluates each EvaluatedAlgorithm, and prints out the results from each one in
-        a nice tabular form The “doTop N” parameter – this allows us to bypass the 
-        computation of hit rank metrics
+        It evaluates each EvaluatedAlgorithm
         Parameters
         ----------
         doTopN : boolean
@@ -60,16 +61,15 @@ class Evaluator:
         None.
 
         """
-        for algorithm in self.algorithms:  # algorithms --> EvaluatedAlgorithm(algorithm, name)
+        for algorithm in self.algorithms:  
             print("Evaluating ", algorithm.GetName(), "...")
-            self.results[algorithm.GetName()] = algorithm.Evaluate(self.dataset)  # original
+            self.results[algorithm.GetName()] = algorithm.Evaluate(self.dataset) 
           
 #%%
     def TopNRecs(self, rd, testSubject='user', k=10):
         """
-        Sometimes it’s helpful to look at the actual recommendations being produced for
-        a known users whose tastes you understand at a more intuitive level. It can be a
-        helpful sanity check.
+        Generates the top-N list of Tourist Experiences of the hotels for a
+        candidate user.
         Parameters
         ----------
         ml : class object
@@ -87,29 +87,21 @@ class Evaluator:
         
         for algo in self.algorithms:
             print("\nUsing recommender ", algo.GetName())
-
             print("\nBuilding recommendation model...")
             trainSet = self.dataset.GetFullTrainSet()
             algo.GetAlgorithm().fit(trainSet)
-            
             print("Computing recommendations...")
-            testSet = self.dataset.GetAntiTestSetForUser(testSubject)   
-        
+            testSet = self.dataset.GetAntiTestSetForUser(testSubject) 
             predictions = algo.GetAlgorithm().test(testSet)
             predictionRecommendation.append(predictions)
-            
             recommendations = []
             print ("\nWe recommend:")
             for userID, hotelID, actualRating, estimatedRating, _ in predictions:
                 hotel_ID = int(hotelID)
                 recommendations.append((hotel_ID, estimatedRating))
-            
             recommendations.sort(key=lambda x: x[1], reverse=True)
-            
             hotels = rd.hotels 
             for ratings in recommendations[:10]:
                 print(hotels[hotels.hotelID == ratings[0]]['hotelName'].to_string(index = False) +
-                      ', ' + str(ratings[1]))
-               
+                      ', ' + str(ratings[1]))   
         return predictionRecommendation    
-                

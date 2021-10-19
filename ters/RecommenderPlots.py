@@ -8,11 +8,14 @@ Created on Friday, May 1 15:32:13 2020
     Juan Francisco Mendoza Moreno (jfmendozam@gmail.com)
     
 """
-import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 
+
 class RecommenderPlots:
+    """
+    Generates statistical plots of the tourist experience recommendation process.
+    """
     
     def __init__(self, rd, results, similarity, figurePath = 'figure/'):
         """
@@ -37,8 +40,7 @@ class RecommenderPlots:
         self.similarity = similarity
 
  
-#%% ratingPlot method
-
+#%% 
     def ratingPlot(self):
         """
         Users rating plot
@@ -70,8 +72,7 @@ class RecommenderPlots:
         plt.savefig(self.figurePath + 'bar_ratings.svg', format='svg')           
         
 
-#%% metricPlot method
-
+#%% 
     def metricPlot(self):
         """
         Comparison of all algorithms using RMSE and MAE metrics.
@@ -96,44 +97,3 @@ class RecommenderPlots:
         ax.legend()
         ax.grid(ls='dashed')
         plt.savefig(self.figurePath + 'metrics_MAE_RMSE.svg', format='svg') 
-        
-        
-        fig, ax = plt.subplots(figsize = (10,5))
-        ax.plot(algorithmName, mae, label='MAE', marker='*', linewidth=2)
-        plt.title('Performance of recommendation algorithms', loc='center', fontsize=15)
-        plt.xlabel('Algorithms', fontsize=15)
-        plt.ylabel('MAE', fontsize=15)
-        ax.grid(ls='dashed')
-        plt.savefig(self.figurePath + 'metrics_MAE.svg', format='svg') 
-        plt.show()
-        
-        fig, ax = plt.subplots(figsize = (10,5))
-        ax.plot(algorithmName, rmse, label='RMSE', marker='*', linewidth=2, color = '#e4722e') 
-        plt.title('Performance of recommendation algorithms', loc='center', fontsize=15)
-        plt.xlabel('Algorithms', fontsize=15)
-        plt.ylabel('RMSE', fontsize=15)
-        ax.grid(ls='dashed')
-        plt.savefig(self.figurePath + 'metrics_RMSE.svg', format='svg') 
-        plt.show()        
-        
- #%% Correlation method
-        
-    def plot_correlation(self): 
-        """
-        This method generates the dataset correlation heatmap.
-        """
-        
-        data = pd.DataFrame(self.similarity)
-        # Show heatmap of the balanced dataset variables correlation.
-        correlation = data.corr().round(1)
-        corr = correlation.iloc[0:20,0:20]
-        
-        ax = sns.heatmap(corr, 
-                    xticklabels=corr.columns.values,
-                    yticklabels=corr.columns.values, annot=True, fmt = ".1g",
-                    cmap="Blues", rasterized=True)
-        ax.set_title('Similarity matrix correlation', fontsize = 15)
-        plt.setp(ax.get_xticklabels(), rotation=45, ha="right", rotation_mode="anchor")
-        plt.setp(ax.get_yticklabels(), rotation=45, ha="right", rotation_mode="anchor")
-        bottom, top = ax.get_ylim()
-        ax.set_ylim(bottom + 0.5, top - 0.5)         

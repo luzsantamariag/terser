@@ -21,23 +21,50 @@ from tensorflow.keras.utils import plot_model
 import pandas as pd
 from sklearn.preprocessing import LabelEncoder 
 from tensorflow.keras import metrics
-import tensorflow as tf
+
 
 class RecommenderCF_CNN:
+    """
+    Tourist Experiences Recommender based on Collaborative Fintering and 1D-CNN
+    """
     
     def __init__(self, hotelRating, hotel):
+        """
+        Default constructor
+        Parameters
+        ----------
+        hotelRating : dataframe
+            DESCRIPTION. Set of user ratings by tourist experiences in hotels. 
+        hotel : dataframe
+            DESCRIPTION. Set of hotels' TE 
+        Returns
+        -------
+        None.
 
+        """
         self.hotelRating = hotelRating
         self.hotel = hotel
         self.embedding_factor = 50
         self.dropout_rate = 0.1
         
 
-#%% shuffle method 
-        
+#%% 
     def getDataRec(self):
-        # Perform some preprocessing to encode users and hotels as integer indices.
-        # Method for creating a new column with user number
+        """
+        Gets the training and testing data set.
+        Returns
+        -------
+        num_users : int
+            DESCRIPTION. Users number
+        num_hotels : int
+            DESCRIPTION. hotels number
+        x : array
+            DESCRIPTION. Hotel review attributes
+        y : array
+            DESCRIPTION. User rating
+
+        """
+        # It performs the preprocessing to encode users and hotels as integer indices.
         mode = pd.options.mode.chained_assignment
         pd.options.mode.chained_assignment = None
         userId = LabelEncoder()
@@ -59,15 +86,29 @@ class RecommenderCF_CNN:
     
         return num_users, num_hotels, x, y
     
-#%% split_data method     
-        
+#%% 
     def split_data(self, x, y, split = 0.8):
         """
-        It divides the features arrays and labels vector into training and test data.
+        It divides the features arrays and labels vector into training and test data.        
         Parameters
         ----------
-        split : TYPE, optional
-            DESCRIPTION. The default is 0.8.
+        x : array
+            DESCRIPTION. Hotel review attributes
+        y : array
+            DESCRIPTION. User rating
+        split : float
+            DESCRIPTION. The default is 0.8. Percentage of training data
+
+        Returns
+        -------
+        x_train : array
+            DESCRIPTION. Training feature set
+        y_train : array
+            DESCRIPTION. Training label set
+        x_test : array
+            DESCRIPTION. Testing feature set
+        y_test : array
+            DESCRIPTION. Testing label set
         """
         size = len(x)
         x_train = x[ : int(split * size)]
@@ -77,29 +118,50 @@ class RecommenderCF_CNN:
              
         return x_train, y_train, x_test, y_test
     
-#%% embeddingLayer method
-
+#%% 
     def embeddingLayer(self, num_items, num_factors, id_input):
+        """
+        Defines the length of the input sequences for hotel and user vectors.
+        Parameters
+        ----------
+        num_items : int
+            DESCRIPTION. Features' vector size
+        num_factors : int
+            DESCRIPTION. Size of the embedding vectors
+        id_input : int
+            DESCRIPTION. Length of input sequences
+
+        Returns
+        -------
+        x : array
+            DESCRIPTION. Size of the vector space in which user and hotel features will be embedded
+
+        """
         x = Embedding(num_items, num_factors, embeddings_initializer='he_normal',
                       embeddings_regularizer=l2(1e-6))(id_input)
         return x
  
-#%% recommender method
-    
+#%% 
     def recommender(self):
-        # Each instance will consist of two inputs: a single user id, and a single movie id
+        """
+        It defines the model of the tourist experiences recommender based on 1D-CNN.
+        Returns
+        -------
+        model : object
+            DESCRIPTION. Recommender model
+
+        """
+        # Each instance has two inputs a userId and a hotelID
         user = Input(shape=(1,), name='user_id')
         hotel = Input(shape=(1,), name='hotel')
-    
         userEmbedded = self.embeddingLayer(len(self.hotelRating.user_id.unique()), self.embedding_factor, user)
         hotelEmbedded = self.embeddingLayer(len(self.hotelRating.hotel.unique()), self.embedding_factor, hotel)
-        
         # Concatenate the embeddings (and remove the useless extra dimension)
         x = Concatenate()([userEmbedded, hotelEmbedded])
         x = Conv1D(filters = 128, kernel_size = 1) (x) 
         x = MaxPooling1D(pool_size = 1) (x)   
         x = Dropout(self.dropout_rate)(x)
-        x = Dense(64, kernel_initializer = 'he_normal')(x)  
+        x = Dense(64, kernel_initializer = 'he_normal')(x)   
         x = Dense(1, activation = 'relu', name = 'prediction')(x)
         # Create the recommendation model
         model = Model(inputs = [user, hotel], outputs = x)
@@ -107,7 +169,27 @@ class RecommenderCF_CNN:
 
 #%%
     def validation_model(self, metric, x_train, y_train, x_test, y_test, loss_val):
-        
+        """
+        Model validation with training and testing set.
+        Parameters
+        ----------
+        metric : object
+            DESCRIPTION. RMSE and MAE metrics
+        x_train : array
+            DESCRIPTION. Training feature set
+        y_train : array
+            DESCRIPTION. Training label set
+        x_test : TYPE
+            DESCRIPTION. Testing feature set
+        y_test : TYPE
+            DESCRIPTION. Testing label set
+        loss_val : TYPE
+            DESCRIPTION.
+        Returns
+        -------
+        history : list
+            DESCRIPTION. Training and testing results 
+        """
         self.model.compile(optimizer = Adam(lr=0.001), 
                             loss = loss_val, metrics = metric)      
         
@@ -124,10 +206,23 @@ class RecommenderCF_CNN:
             )
         return history                      
 
-#%% model method 
-
+#%% 
     def run_model(self, user_id, split, figurePath):
-
+        """
+        It defines the parameters for the recommender model and metrics results.
+        Parameters
+        ----------
+        user_id : int
+            DESCRIPTION. 
+        split : int
+            DESCRIPTION.
+        figurePath : String
+            DESCRIPTION. Path name
+        Returns
+        -------
+        results : list
+            DESCRIPTION. Metrics results 
+        """
         results = []    
         num_users, num_hotels, x, y = self.getDataRec()
         x_train, y_train, x_test, y_test = self.split_data(x, y, split)
@@ -142,7 +237,6 @@ class RecommenderCF_CNN:
         hist = self.history_RMSE
         self.plotMetrics(figurePath, 'RMSE', hist,
                          title = 'Root Mean Squared Error of the CNN-based recommender')      
-
         # Compile the model - MAE
         self.model = self.recommender()
         self.history_MAE = self.validation_model(
@@ -160,38 +254,24 @@ class RecommenderCF_CNN:
         return results
 
 
-#%% plotMetrics method 
-        
+#%% 
     def plotMetrics(self, figurePath, name, history, title):
-        
-        fig, ax = plt.subplots(figsize = (10,5))
-        ax.plot(history.epoch, history.history[name], label='train')
-        ax.plot(history.epoch, history.history['val_'+ name], label='test')
-        ax.set_xlabel('Epoch')
-        ax.set_ylabel(name)
-        ax.set_xlim(left=0, right = history.epoch[-1])
-        chartBox = ax.get_position()
-        ax.set_position([chartBox.x0, chartBox.y0, chartBox.width*1, chartBox.height])
-        ax.legend(loc='upper center', bbox_to_anchor=(0.85, 0.95), shadow=True, ncol=1)
-        ax.xaxis.set_major_locator(MaxNLocator(integer=True))
-        ax.grid(ls = 'solid')
-        plt.title(title, loc='center', fontsize=15)
-        plt.savefig(figurePath + name + '_CF_CNN.svg', format='svg')
-        plt.show()
-             
-        fig, ax = plt.subplots(figsize = (10,5))
-        ax.plot(history.history["loss"], label='train')
-        ax.plot(history.history["val_loss"], label='test')
-        ax.xaxis.set_major_locator(MaxNLocator(integer=True))
-        plt.title("Model loss: " + name + ' of the CNN-based recommender', fontsize=15)
-        plt.ylabel("Loss")
-        plt.xlabel("Epoch")
-        ax.legend(loc='upper center', bbox_to_anchor=(0.85, 0.95), shadow=True, ncol=1)        
-        #plt.legend(["train", "test"], loc = "upper right")
-        ax.grid(ls = 'solid')
-        plt.savefig(figurePath + 'loss_'+ name + '_CF_CNN.svg', format='svg') 
-        plt.show()   
-
+        """
+        Precision result plots of TERS.
+        Parameters
+        ----------
+        figurePath : String
+            DESCRIPTION. Path name
+        name : String
+            DESCRIPTION. Metric name
+        history : list
+            DESCRIPTION. Training and testing results 
+        title : String
+            DESCRIPTION. Plot description
+        Returns
+        -------
+        None.
+        """
         fig, ax = plt.subplots(figsize = (10,5))        
         plt.plot(history.history['loss'], "--", color = '#ff7f0eff', label = "Train loss")
         plt.plot(history.epoch, history.history[name], "--", color = '#1f77b4ff', label = "Train")
@@ -205,22 +285,31 @@ class RecommenderCF_CNN:
         ax.legend(loc='upper center', bbox_to_anchor=(0.85, 0.95), shadow=True, ncol=1) 
         plt.ylabel('Loss/'+ name)
         plt.xlabel('Epoch')
-        #plt.ylim(0) 
         ax.grid(ls = 'solid')
         plt.savefig(figurePath + 'train_val'+ name + '_CF_CNN.svg', format='svg')
         plt.show()        
         
-#%% prediction method
-
+#%% 
     def prediction(self, user_id):
-        # Let us get a user and see the top recommendations.
+        """
+        Generates the top-N list of Tourist Experiences of the hotels for a
+        candidate user.
+        Parameters
+        ----------
+        user_id : int
+            DESCRIPTION. Candidate user
 
+        Returns
+        -------
+        recommendationList : list
+            DESCRIPTION. top-N list of Tourist Experiences of the hotels
+        """
         uidTest = self.user[user_id] 
         hotels_visited = self.hotelRating[self.hotelRating.userId == user_id]
         hotels_not_visited = list(self.hotel[~self.hotel["hotelID"].isin(hotels_visited.hotelID.values)]["hotelID"])   
         
         hotels_not_visited = list(
-            set(hotels_not_visited).intersection(set(self.hotelID_encoded.keys())) # list 270
+            set(hotels_not_visited).intersection(set(self.hotelID_encoded.keys()))
         )
         hotels_not_visited = pd.DataFrame([[self.hotelID_encoded.get(x)] for x in hotels_not_visited], columns = ['hotel']) 
         hotels_not_visited['user_id'] = uidTest
@@ -233,4 +322,3 @@ class RecommenderCF_CNN:
         recommended_hotelTE = self.hotel[self.hotel["hotelID"].isin(hotels_not_visited.hotelID)]
 
         return pd.merge(hotels_not_visited, recommended_hotelTE).head(10)          
-        

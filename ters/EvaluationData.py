@@ -11,13 +11,16 @@ from surprise import KNNBaseline
 
 class EvaluationData:
     """
+    Split the hotels dataset in training/testing set and build a
+    KNN Evaluator from the AlgoBase Class of the Surprise Library.
+    Use a Leave-One-Out cross validation iterator for providing train/test
+    indices to split data in train test sets.
     """
     
     def __init__(self, data, popularityRankings):
         """
         Default constructor
         """
-
         self.rankings = popularityRankings
         self.fullTrainSet = data.build_full_trainset()  
         self.fullAntiTestSet = self.fullTrainSet.build_anti_testset() 
@@ -26,19 +29,8 @@ class EvaluationData:
         self.simsAlgo = KNNBaseline(sim_options=sim_options) 
         self.simsAlgo.fit(self.fullTrainSet)
  
-#%%        
-            
-    def GetFullTrainSet(self):
-        print("EvaluationData.GetFullTrainSet ")
-        return self.fullTrainSet
-
 #%%    
-    def GetFullAntiTestSet(self):
-        print("EvaluationData.GetFullTrainSet ")
-        return self.fullAntiTestSet
-
-#%%    
-    def GetAntiTestSetForUser(self, testSubject):  # Evaluator class --> TopNRecs()
+    def GetAntiTestSetForUser(self, testSubject): 
         """
         Which gives back a list of empty prediction values for every hotel
         a given user hasn’t rated already.
@@ -62,6 +54,16 @@ class EvaluationData:
                                  i in trainset.all_items() if
                                  i not in user_items]
         return anti_testset
+
+#%%        
+    def GetFullTrainSet(self):
+        print("EvaluationData.GetFullTrainSet ")
+        return self.fullTrainSet
+
+#%%    
+    def GetFullAntiTestSet(self):
+        print("EvaluationData.GetFullTrainSet ")
+        return self.fullAntiTestSet
 
 #%%
     def GetTrainSet(self):

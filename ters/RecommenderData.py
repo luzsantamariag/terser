@@ -9,11 +9,9 @@ Created on Mon Mar 30 19:58:25 2020
 """
 
 import pandas as pd
-from pymongo import MongoClient             # MongoClient class of the PyMongo library
-from geopy.geocoders import Nominatim       # conda install -c conda-forge geopy
+from pymongo import MongoClient          
 import json
-from SPARQLWrapper import SPARQLWrapper, JSON
-# pip install sparqlwrapper
+
 
 class RecommenderData:
     """ 
@@ -23,7 +21,7 @@ class RecommenderData:
     and the users' reviews obtained through the OntoTouTra ontology. 
     """    
     
-    def __init__(self, mongo_client = 'mongodb://localhost:27017', mongo_db = 'ters', hotelTEPath = 'tourist/'):
+    def __init__(self, mongo_client = 'mongodb://localhost:27017', mongo_db = 'terser', hotelTEPath = 'tourist/'):
         """
         Default constructor
         Parameters
@@ -48,9 +46,9 @@ class RecommenderData:
 
         self.mongo_client = mongo_client           # MongoDb localhost URL
         self.mongo_db = mongo_db                   # MongoDB database name
-        self.sliced_collection = 'mebSliced'       # Emotional slicing with HR instances collection of the participants. 
-        self.er_collection               = 'emotionRecognition' # It contains the emotion recognition results generated from the HR data
-        self.sliced_location_collection = 'mebSlicedLocation' #  Emotional slicing and location collection.
+        self.sliced_collection          = 'mebSliced'       # Emotional slicing with HR instances collection of the experiment participants.         
+        self.er_collection              = 'emotionRecognition'   # Collection of the emotional recognition of the experiment participants.. 
+        self.sliced_location_collection = 'mebSlicedLocation' # Emotional slicing and location collection of the experiment participants. 
         
         self.tags = {
             'activity': {'tag': 'Actividades'},
@@ -60,10 +58,8 @@ class RecommenderData:
             'calmQuadrant': {'tag': 'calma'},
             'happyQuadrant': {'tag': 'feliz'},
             }
-        
 
-#%% getTouristExperience method
-
+#%% 
     def getTouristExperience(self):
         """
         Create the tourism experience column in the Hotel Dataframe with the
@@ -80,10 +76,7 @@ class RecommenderData:
         self.hotel['touristExperience'] = self.service.apply(
         lambda x: list(set(x['activityExperience'] + x['wellnessExperience'])), axis = 1)
         
-        return self
-        
-#%% experienceCategory method
-        
+#%%       
     def experienceCategory(self, name):
         """
         Get the tourist experience of each hotel according to the classification
@@ -115,8 +108,7 @@ class RecommenderData:
         return tourExp
     
     
-#%% loadReviewEmotion method
-
+#%% 
     def loadReviewEmotion(self, field):
         """
         Get the user emotion tag through the rating score of the visited hotel.         
@@ -140,75 +132,9 @@ class RecommenderData:
             )
         )
         return result
+           
    
-
-#%% getOntotoutra method  ***** PENDIENT MIGRATION CODE OF DATASET
-
-    def getOntotoutra(self):
-        """
-        Get JSON documents of Booking hotels, reviews and services.
-        Returns
-        -------
-        None.
-        """
-
-        # subject  -  predicate  -  object
-        sparql = SPARQLWrapper("http://192.168.0.36:3030/ds/query")   # Dell 14R
-        # sparql = SPARQLWrapper("http://192.168.0.17:3030/ds/query") # MSI
-        stringQuery = """
-        
-        PREFIX ott: <http://tourdata.org/ontotoutra/ontotoutra.owl#>
-        PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
-        
-        SELECT ?hotelID ?hotelName ?hotelAddress ?cityName ?hotelDescription 
-               ?hotelLat ?hotelLon ?hotelReviewCategoricalScore
-               ?hotelReviewNumber ?hotelReviewScore ?hotelURL
-        WHERE {
-          ?hotel       rdf:type                        ott:Hotel;
-                       ott:hotelID                     ?hotelID;
-                       ott:hotelName                   ?hotelName;
-                       ott:hotelAddress                ?hotelAddress;
-                       ott:hotelDescription            ?hotelDescription;
-                       ott:hotelLat                    ?hotelLat;
-                       ott:hotelLon                    ?hotelLon;
-                       ott:hotelReviewCategoricalScore ?hotelReviewCategoricalScore;
-                       ott:hotelReviewNumber           ?hotelReviewNumber;
-                       ott:hotelReviewScore            ?hotelReviewScore;
-                       ott:hotelURL                    ?hotelURL;
-                       ott:hasCityParent               ?city.
-           ?city       rdf:type                        ott:City;
-                       ott:cityID                      ?cityID;
-                       ott:cityName                    ?cityName;
-                       ott:hasStateParent              ?department.
-           ?department rdf:type                        ott:State;
-                       ott:stateName                   ?stateName.
-          FILTER(?stateName = "Boyacá")
-        }
-        """
-        sparql.setQuery(stringQuery)
-        sparql.setMethod('POST')
-        sparql.setReturnFormat(JSON)
-        sparql.query()
-        results = sparql.query().convert()
-        
-        hotels = []
-        for result in results["results"]["bindings"]:
-            hotel=[]
-            for k, v in result.items():
-                hotel.append(v['value'])
-            hotels.append(hotel)
-        
-        hotels_df = pd.DataFrame(
-            data = hotels,
-            columns = list(results["results"]["bindings"][0].keys())
-        )
-        
-        
-        # return hotels, reviews, services
-        
-   
-#%% hotelRatingFilter method
-
+#%% 
     def hotelRatingFilter(self):
         """
         Filter the DataFrame of hotels with score values greater than 5 and 
@@ -222,7 +148,7 @@ class RecommenderData:
         #self.getOntotoutra()
         self.getTouristExperience()
         self.hotel['emotion'] = self.loadReviewEmotion('reviewScore')
-        # Filter the hotels Dataframe by score and tourist experience. (695 --- 510 --- 355)
+        # Filter the hotels Dataframe by score and tourist experience. 
         dftmp = self.hotel[self.hotel.reviewScore > 5]
         hotelFilter = dftmp[dftmp.astype(str).touristExperience != '[]']
 
@@ -232,9 +158,6 @@ class RecommenderData:
         top['hotelID'] = hotelFilter['hotelID']
         ranking = dict(zip(top.hotelID, top.ranking))
         
-        #***** Sort the hotels dataframe columns
-        #hotelHead = list(hotelFilter.columns.values)
-
         hotelsColumn = ['hotelID', 'hotelName', 'touristExperience','hotelLon', 
                         'hotelLat','reviewScore','reviewNumber','emotion', 
                         'hotelCity','hotelAddress','hotelUrl','state',
@@ -243,7 +166,6 @@ class RecommenderData:
 
         self.reviews['emotion'] = self.loadReviewEmotion('rating')
         # Sort the review dataframe columns 
-        #reviewHead = list(self.reviews.columns.values)
         reviewColumn = ['userId','hotelID', 'rating','country','emotion','reviewDate',
                         'accommodation','accommodationDate','catRating','positiveReview',
                         'negativeReview']
@@ -263,8 +185,7 @@ class RecommenderData:
         
         return hotelTouristExp, hotelRating, ranking
            
-#%% getConnectionMongoDB method
-        
+#%%
     def getConnectionMongoDB(self):
         """
         It gets connecting to MongoDB.
@@ -273,48 +194,41 @@ class RecommenderData:
         self.client = MongoClient(self.mongo_client)        
         # Load database and collection instances
         self.dataBaseMongo = self.client[self.mongo_db]
-        # Load myemotionband collection
-        self.locationCollection = self.dataBaseMongo[self.sliced_collection]
-        self.location = pd.DataFrame(list(self.locationCollection.find()))         
-        self.emotionCollection = self.dataBaseMongo[self.er_collection]   
-        self.emotion = pd.DataFrame(list(self.emotionCollection.find()))  
-        
-        return self
+        # Load the Slicing Emotional and RE Collections
+        locationCollection = self.dataBaseMongo[self.sliced_collection]        
+        self.location = pd.DataFrame(list(locationCollection.find()))         
+        emotionCollection = self.dataBaseMongo[self.er_collection]   
+        self.emotion = pd.DataFrame(list(emotionCollection.find()))  
 
-#%% getUserLocation method
-
+#%% 
     def getUserLocation(self):  
         """
         It gets the participants' location data into emotion slices collection.
         """
-        #self.getCoordinate()
         self.location['coord'] = [', '.join(str(x) for x in y) for y in map(tuple, self.location[['latitude', 'longitude']].values)]        
         self.coord = pd.read_csv(self.coordPath, sep = ";")
         self.location['city'] = self.location.apply(lambda x: self.coord[self.coord['coord'] == x.coord]['city'].item(), axis = 1)
         self.location['state'] = self.location.apply(lambda x: self.coord[self.coord['coord'] == x.coord]['state'].item(), axis = 1)
         self.location['country'] = self.location.apply(lambda x: self.coord[self.coord['coord'] == x.coord]['country'].item(), axis = 1)
         self.location = self.location.drop(['_id'], axis =1)
-        #self.location.to_csv('tourist/location.csv', index = False)
-        #self.insertLocationCollection()
-        
-        return self
+        self.insertLocationCollection()
 
-#%% insertLocationCollection method    
-    
+#%% 
     def insertLocationCollection(self):
         """
         Create a collection with the participant's location.
         """
         # Load sliced_location_collection
-        self.locCollection = self.dataBaseMongo[self.sliced_location_collection]
-        data_json = json.loads(self.location.to_json(orient='records'))
-        self.locCollection.insert_many(data_json) 
-        self.client.close()
+        locCollection = self.dataBaseMongo[self.sliced_location_collection]  
+        total_docs = locCollection.count_documents({})
         
-        return self
+        if total_docs == 0: 
+            data_json = json.loads(self.location.to_json(orient='records'))
+            locCollection.insert_many(data_json) 
+            print (locCollection.name, "has", total_docs, "total documents.")    
+        self.client.close()
 
-#%% getUserEmotionRecognition method
-
+#%%
     def getUserEmotionRecognition(self):
         """
         Get the percentage of the emotion felt by each participant with the 
@@ -336,11 +250,11 @@ class RecommenderData:
                 self.emotion.loc[data.index.values[0]:data.index.values[len(data)-1]])
         self.emotion.update(df_emotion)
         self.getUserCity()
+        felt_emotion = self.emotion
         
-        return self.emotion
+        return felt_emotion
             
-#%% getUserCity method
-
+#%% 
     def getUserCity(self):
         """
         Get the participant's location city based on historical data from the emotion,
@@ -366,11 +280,8 @@ class RecommenderData:
             self.fieldCreate('latitude', data, data_city)            
             df_emotion = df_emotion.append(self.emotion.loc[data.index.values[0]:data.index.values[len(data)-1]])
         self.emotion.update(df_emotion)
-        
-        return self
 
-#%% fieldCreate method
-    
+#%% 
     def fieldCreate(self, name, data, data_city):
         """
         Create the city, longitude and latitude field 
@@ -386,61 +297,8 @@ class RecommenderData:
         self.emotion[name] = self.emotion.loc[
         data.index.values[0]:data.index.values[len(data)-1]].apply(
         lambda x: data_city[name].to_string(index=False), axis= 1)
-        
-        return self
 
-#%% getCoordinate method
-
-    def getCoordinate(self):
-        """
-        Use the user's latitude and longitude parameters by sending them to the 
-        OpenStreetMap server to get the city, state, and country.
-        """
-        # Option 1. Create the site column in the Dataframe of all the records 
-        # of the location collection.
-        self.location["site"] = self.location.apply(lambda x: self.city_state_country(str(x.latitude) + ', ' + str(x.longitude)), axis=1)
-        # Option 2. Option 2. Due to connection problems to the OpenStreetMap server,
-        # it must fragment the Dataframe. 
-        self.coord = pd.DataFrame(self.location['coord'].unique(), columns = ['coord'])
-        # Create the site column in the coordinate Dataframe of unique records of the location collection.
-        self.coord["site"] = self.coord.apply(lambda x: self.city_state_country(x.coord), axis=1)
-        # Create a fragmented 500-row Dataframe with the coordinates of the unique records in the location collection..
-        # coord1 = coord.loc[:500]  # coord.loc[501:1000]... coord.loc[3001:3242]
-        # coord1['site'] = coord1.apply(lambda x: city_state_country(x.coord), axis = 1)
-        # coord1.to_csv('tourist/coord1.csv', index = False)
-        
-        return self
-
-#%% city_state_country method  
-
-    def city_state_country(self, coord):
-        """
-        Use Openstreetmap's free Geocoding service to get a participant's city,
-        state, and country.
-        Parameters
-        ----------
-        coord : string
-            DESCRIPTION. Latitude and longitude of a participant
-        Returns
-        -------
-        city : string
-            DESCRIPTION. City
-        state : string
-            DESCRIPTION. State
-        country : string
-            DESCRIPTION. Country
-        """
-        geolocator = Nominatim(user_agent="myGeocoder", timeout=2)
-        location = geolocator.reverse(coord, exactly_one=True)
-        address = location.raw['address']
-        city = address.get('city', '')
-        state = address.get('state', '')
-        country = address.get('country', '')
-
-        return city, state, country
-
-#%% getTouristExperienceType
-
+#%% 
     def getTouristExperienceType(self):
         """
         It gets the tourism experience category of the hotels' dataset.
@@ -460,8 +318,7 @@ class RecommenderData:
         
         return tourismExperience
 
-#%% catToNumerical
-    
+#%% 
     def catToNumerical(self, TEType, te):
         """
         Get tourist experience type vectors for every hotel
@@ -489,8 +346,7 @@ class RecommenderData:
                 
         return result
 
-#%% getTELocation
-
+#%% 
     def getTELocation(self):
         """
         It gets the location of the tourist experiences of the hotels' dataset.
@@ -506,7 +362,7 @@ class RecommenderData:
         
         return dict(zip(df.hotelID, df.location))
 
-#%% getReviewsCategory
+#%% 
     def getReviewsCategory(self):
         """
         It gets the hotel reviews category label.
@@ -521,7 +377,7 @@ class RecommenderData:
         
         return dict(zip(df.hotelID, df.reviewCategoricalScore))
 
-#%% getHotelDescription
+#%% 
     def getHotelDescription(self):
         """
         It gets the hotel description.
@@ -535,4 +391,3 @@ class RecommenderData:
         df['hotelDescription'] = self.hotels['hotelDescription']
         
         return dict(zip(df.hotelID, df.hotelDescription))    
-    

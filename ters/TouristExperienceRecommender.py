@@ -27,6 +27,9 @@ import matplotlib.pyplot as plt
 
 
 class TouristExperienceRecommender:
+    """
+    Tourist Experiences Recommender System based on Emotion Recognition with wearable data.
+    """
     
     def __init__(self):
         """
@@ -36,15 +39,15 @@ class TouristExperienceRecommender:
         self.figurePath = 'figure/'       # Figures directory path
         self.profilePath = 'participant/' # Participant directory path  
         self.hotelTEPath = 'tourist/'     # Directory path of hotels' Booking dataset  
-        self.mongo_client = 'mongodb://localhost:27017' # MongoDb localhost URL
-        self.mongo_db = 'ters'                           # MongoDB database name
-        
-        # Load up common dataset for the recommender algorithms
+        self.mongo_client = 'mongodb://localhost:27017'     # MongoDb localhost URL
+        self.mongo_db = 'terser'                            # MongoDB database name
+        self.endPoint = 'tourdata.org:3030/ds/query'        # OntoTouTra End-Point
+        self.stateName = 'Boyacá'                           # Department name of Colombia
+        self.dataOrigin = 0  # Origin of the data about TE. 0 CSV files and 1 SPARQL queries.                               #                              
         self.rd, self.evaluationData, self.rankings = self.loadTERSData()
         self.buildEvaluationData()
         self.evaluateRecommenderAlgoritm()
         self.generateRecommenderReport()
-        
 
 #%% LoadTERSData method
   
@@ -244,7 +247,6 @@ class TouristExperienceRecommender:
         
         # Recommender plots 
         rp = RecommenderPlots(self.rd, self.results, self.sim, self.figurePath)
-        #rp.plot_correlation()
         rp.ratingPlot()
         rp.metricPlot()
 

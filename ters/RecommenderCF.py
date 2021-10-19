@@ -25,18 +25,46 @@ import pandas as pd
 from tensorflow.keras import metrics
 
 class RecommenderCF:
+    """
+    Tourist Experiences Recommender based on Collaborative Filtering
+    """
     
     def __init__(self, hotelRating, hotel):
+        """
+        Default constructor
+        Parameters
+        ----------
+        hotelRating : dataframe
+            DESCRIPTION. Set of user ratings by tourist experiences in hotels. 
+        hotel : dataframe
+            DESCRIPTION. Set of hotels' TE 
+        Returns
+        -------
+        None.
 
+        """        
         self.hotelRating = hotelRating
         self.hotel = hotel
         self.embedding_factor = 50
         
 
-#%% shuffle method 
-        
+#%% 
     def getDataRec(self):
-        # Perform some preprocessing to encode users and hotels as integer indices.
+        """
+        Gets the training and testing data set.
+        Returns
+        -------
+        num_users : int
+            DESCRIPTION. Users number
+        num_hotels : int
+            DESCRIPTION. hotels number
+        x : array
+            DESCRIPTION. Hotel review attributes
+        y : array
+            DESCRIPTION. User rating
+
+        """
+        # It performs the preprocessing to encode users and hotels as integer indices.
         mode = pd.options.mode.chained_assignment
         pd.options.mode.chained_assignment = None
         user = self.hotelRating["userId"].unique().tolist()
@@ -60,15 +88,29 @@ class RecommenderCF:
 
         return num_users, num_hotels, x, y
     
-#%% split_data method     
-        
+#%% 
     def split_data(self, x, y, split = 0.8):
         """
-        It divides the features arrays and labels vector into training and test data.
+        It divides the features arrays and labels vector into training and test data.        
         Parameters
         ----------
-        split : TYPE, optional
-            DESCRIPTION. The default is 0.8.
+        x : array
+            DESCRIPTION. Hotel review attributes
+        y : array
+            DESCRIPTION. User rating
+        split : float
+            DESCRIPTION. The default is 0.8. Percentage of training data
+
+        Returns
+        -------
+        x_train : array
+            DESCRIPTION. Training feature set
+        y_train : array
+            DESCRIPTION. Training label set
+        x_test : array
+            DESCRIPTION. Testing feature set
+        y_test : array
+            DESCRIPTION. Testing label set
         """
         size = len(x)
         x_train = x[ : int(split * size)]
@@ -79,21 +121,52 @@ class RecommenderCF:
     
 #%%
     def validation_model(self, metric, x_train, y_train, x_test, y_test, loss_val):
-        
+        """
+        Model validation with training and testing set.
+        Parameters
+        ----------
+        metric : object
+            DESCRIPTION. RMSE and MAE metrics
+        x_train : array
+            DESCRIPTION. Training feature set
+        y_train : array
+            DESCRIPTION. Training label set
+        x_test : TYPE
+            DESCRIPTION. Testing feature set
+        y_test : TYPE
+            DESCRIPTION. Testing label set
+        loss_val : TYPE
+            DESCRIPTION.
+        Returns
+        -------
+        history : list
+            DESCRIPTION. Training and testing results 
+        """
         self.model.compile(optimizer = Adam(lr=0.001), 
                             loss = loss_val, metrics = metric)      
-        
-        # Train the model based on the data split
         history = self.model.fit(
             x = x_train, y = y_train, batch_size=64, epochs=10, 
             verbose=1, validation_data = (x_test, y_test)
             )
         return history                      
     
-#%% model method 
-
+#%% 
     def run_model(self, user_id, split, figurePath):
-        
+        """
+        It defines the parameters for the recommender model and metrics results.
+        Parameters
+        ----------
+        user_id : int
+            DESCRIPTION. 
+        split : int
+            DESCRIPTION.
+        figurePath : String
+            DESCRIPTION. Path name
+        Returns
+        -------
+        results : list
+            DESCRIPTION. Metrics results 
+        """
         results = [] 
         num_users, num_hotels, x, y = self.getDataRec()
         x_train, y_train, x_test, y_test = self.split_data(x, y, split)
@@ -126,37 +199,24 @@ class RecommenderCF:
         return results
     
 
-#%% plotMetrics method 
-        
+#%%  
     def plotMetrics(self, figurePath, name, history, title):
-
-        fig, ax = plt.subplots(figsize = (10,5))
-        ax.plot(history.epoch, history.history[name], label='train')
-        ax.plot(history.epoch, history.history['val_'+ name], label='test')
-        ax.set_xlabel('Epoch')
-        ax.set_ylabel(name)
-        ax.set_xlim(left=0, right = history.epoch[-1])
-        chartBox = ax.get_position()
-        ax.set_position([chartBox.x0, chartBox.y0, chartBox.width*1, chartBox.height])
-        ax.legend(loc='upper center', bbox_to_anchor=(0.85, 0.95), shadow=True, ncol=1)
-        ax.xaxis.set_major_locator(MaxNLocator(integer=True))
-        ax.grid(ls = 'solid')
-        plt.title(title, loc='center', fontsize=15)
-        plt.savefig(figurePath + name + '_CF.svg', format='svg')
-        plt.show()
-             
-        fig, ax = plt.subplots(figsize = (10,5))
-        ax.plot(history.history["loss"], label='train')
-        ax.plot(history.history["val_loss"], label='test')
-        ax.xaxis.set_major_locator(MaxNLocator(integer=True))
-        plt.title("Model loss: " + name + ' of the CF-Net recommender', fontsize=15)
-        plt.ylabel("Loss")
-        plt.xlabel("Epoch")
-        ax.legend(loc='upper center', bbox_to_anchor=(0.85, 0.95), shadow=True, ncol=1)
-        ax.grid(ls = 'solid')
-        plt.savefig(figurePath + 'loss_'+ name + '_CF.svg', format='svg') 
-        plt.show()       
-        
+        """
+        Precision result plots of TERS.
+        Parameters
+        ----------
+        figurePath : String
+            DESCRIPTION. Path name
+        name : String
+            DESCRIPTION. Metric name
+        history : list
+            DESCRIPTION. Training and testing results 
+        title : String
+            DESCRIPTION. Plot description
+        Returns
+        -------
+        None.
+        """        
         fig, ax = plt.subplots(figsize = (10,5))    
         plt.plot(history.history['loss'], "--", color = '#ff7f0eff', label = "Train loss")
         plt.plot(history.epoch, history.history[name], "--", color = '#1f77b4ff', label = "Train")
@@ -175,13 +235,22 @@ class RecommenderCF:
         plt.savefig(figurePath + 'train_val'+ name + '_CF.svg', format='svg')
         plt.show()        
 
-
-
-#%% prediction method 
-
+#%% 
     def prediction(self, user_id):
+        """
+        Generates the top-N list of Tourist Experiences of the hotels for a
+        candidate user.
         # Author: Banerjee, Siddhartha. Collaborative Filtering for Movie Recommendations. 2020. 
         # https://keras.io/examples/structured_data/collaborative_filtering_movielens/   
+        Parameters
+        ----------
+        user_id : int
+            DESCRIPTION. Candidate user
+        Returns
+        -------
+        recommendationList : list
+            DESCRIPTION. top-N list of Tourist Experiences of the hotels
+        """
         hotels_visited = self.hotelRating[self.hotelRating.userId == user_id]
         hotels_not_visited = self.hotel[~self.hotel["hotelID"].isin(hotels_visited.hotelID.values)]["hotelID"]         
         hotels_not_visited = list(set(hotels_not_visited).intersection(set(self.hotel2hotel_encoded.keys()))        )
@@ -197,11 +266,11 @@ class RecommenderCF:
         
         return self.hotel[self.hotel["hotelID"].isin(recommended_hotelTE)]
 
-#%% RecommenderNet method 
-        
+#%%   
 class RecommenderNet(Model):
     # Author: Banerjee, Siddhartha. Collaborative Filtering for Movie Recommendations. 2020. 
     # https://keras.io/examples/structured_data/collaborative_filtering_movielens/    
+    
     def __init__(self, num_users, num_hotels, embedding_factor, **kwargs):
         super(RecommenderNet, self).__init__(**kwargs)
         self.num_users = num_users

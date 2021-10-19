@@ -11,10 +11,8 @@ Created on Wed Apr 1 13:20:13 2020
 import pandas as pd
 import numpy as np
 import ast
-# -----    pip install gender-guesser
 import gender_guesser.detector as gender
 from scipy import spatial
-# -----    pip install haversine
 from haversine import haversine
 
 
@@ -84,7 +82,7 @@ class RecommenderContext:
             'hcE': {'tag': 'Heritage/Culture'}, 
             }
         
-
+#%%
     def computeUserSimilarity(self):   
         """
         Calculate the similarity of the profiles of a user participating in the
@@ -102,7 +100,7 @@ class RecommenderContext:
         
         return candidateUser, self.userProfile
 
-
+#%%
     def getUserProfile(self):
         """
         Get a participant profile of the emotion recognition experiment. Return the
@@ -131,7 +129,7 @@ class RecommenderContext:
         
         return profile      
     
-
+#%%
     def getCandidateUser(self, profile):
         """
         Get a candidate user of the hotels' Booking dataset based on a profile of 
@@ -169,7 +167,7 @@ class RecommenderContext:
     
         return candidateUser
         
-    
+#%%    
     def computeTESimilarity(self, hotelTE, sim, userGroup, te):
         """
         Calculate the cosine similarity metric between the tourist experiences 
@@ -210,7 +208,7 @@ class RecommenderContext:
             
         return pd.DataFrame(candidateUser)
 
-    
+#%%    
     def getUserContext(self, recommenderList):  
         """
         Get the hotels' tourist experiences recommendations for the participant of
@@ -254,7 +252,7 @@ class RecommenderContext:
         
         return recommendation 
 
-
+#%%
     def getUserRecommendation(self, recommendation, latitude, longitude):
         """
         Compute the cosine similarity metric between tourism experiences related to

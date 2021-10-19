@@ -10,6 +10,7 @@ from surprise import accuracy
 
 class EvaluatedAlgorithm:
     """
+    It defines a wrapper for calling the Recommender Metrics module.
     """    
     
     def __init__(self, algorithm, name):
@@ -39,19 +40,14 @@ class EvaluatedAlgorithm:
         metrics = {}
         if (verbose):
             print("Evaluating accuracy...")
-                      
         self.algorithm.fit(evaluationData.GetTrainSet())
         predictions = self.algorithm.test(evaluationData.GetTestSet())
-        
         metrics["RMSE"] = accuracy.rmse(predictions, verbose=True)
         print('Root Mean Square error: ' + str(metrics["RMSE"]))
         metrics["MAE"] = accuracy.mae(predictions, verbose=True)
         print('Mean Absolute Error metric: ' + str(metrics["MAE"]))
-
-        
         if (verbose):
             print("Analysis complete.")
-    
         return metrics
 
 #%%    
@@ -61,5 +57,3 @@ class EvaluatedAlgorithm:
 #%%    
     def GetAlgorithm(self):
         return self.algorithm
-    
-    
