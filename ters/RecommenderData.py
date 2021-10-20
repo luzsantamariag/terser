@@ -39,7 +39,7 @@ class RecommenderData:
         stateName : String
             DESCRIPTION. Department's name
         dataSource : int
-            DESCRIPTION. Data's origin            
+            DESCRIPTION. Data source            
         """
         self.hotelPath = hotelTEPath + 'hotels.csv'     
         self.servicePath = hotelTEPath + 'services.csv'
@@ -47,11 +47,11 @@ class RecommenderData:
         self.reviewsPath = hotelTEPath + 'reviews.csv'  
         self.touristExp = pd.read_csv(self.experiencePath, sep = ",")  
         self.coordPath = hotelTEPath + 'coord.csv'
-        self.mongo_client = mongo_client           # MongoDb localhost URL
-        self.mongo_db = mongo_db                   # MongoDB database name
-        self.sliced_collection          = 'mebSliced'       # Emotional slicing with HR instances collection of the experiment participants.         
-        self.er_collection              = 'emotionRecognition'   # Collection of the emotional recognition of the experiment participants.. 
-        self.sliced_location_collection = 'mebSlicedLocation' # Emotional slicing and location collection of the experiment participants. 
+        self.mongo_client = mongo_client          
+        self.mongo_db = mongo_db                 
+        self.sliced_collection          = 'mebSliced'            # Collection of Emotional Slicing with HR instances of the participants.         
+        self.er_collection              = 'emotionRecognition'   # Collection of the emotion detection of the participants. 
+        self.sliced_location_collection = 'mebSlicedLocation'    # Collection of ES and geographic location of the participants.  
         
         self.tags = {
             'activity': {'tag': 'Actividades'},
@@ -64,7 +64,6 @@ class RecommenderData:
         
         self.getTERSData(endPoint, stateName, dataSource)
 
-
 #%%
     def getTERSData(self, endPoint, stateName, dataSource):
         """
@@ -76,7 +75,7 @@ class RecommenderData:
         stateName : String
             DESCRIPTION. Department's name
         dataSource : int
-            DESCRIPTION. Data's origin
+            DESCRIPTION. Data source
         Returns
         -------
         None.
