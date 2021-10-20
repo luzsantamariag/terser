@@ -49,8 +49,7 @@ class TouristExperienceRecommender:
         self.evaluateRecommenderAlgoritm()
         self.generateRecommenderReport()
 
-#%% LoadTERSData method
-  
+#%%
     def loadTERSData(self):
         """
         Obtain the emotion recognition dataset and consolidate the hotels' tourist experiences
@@ -66,42 +65,33 @@ class TouristExperienceRecommender:
         """    
         rd = RecommenderData(self.mongo_client, self.mongo_db, self.hotelTEPath,
                              self.endPoint, self.stateName, self.dataSource) 
-        print ("Loading the users' emotion recognition and hotels' Booking datasets.")
-    
+        print ("Loading the users' emotion recognition and OntoTouTra ontology datasets.")
         hotelTouristExp, hotelRating, hotelTEranking = rd.hotelRatingFilter()
         rd.getUserEmotionRecognition()
-    
         reader = Reader(rating_scale = (1, 10))
         reviewRating = Dataset.load_from_df(hotelRating[['userId','hotelID','y']], reader)
         self.hotels = rd.hotels
         self.reviews = rd.reviews
         self.rating = rd.rating
-            
         return rd, reviewRating, hotelTEranking 
 
-
-#%% 2. buildEvaluationData (reviewRatingDataset, hotelTEranking)
-
+#%% 
     def buildEvaluationData(self):
         """
-        Split the hotels' Booking dataset in training/testing set. 
+        Split the OntoTouTra dataset in training/testing set. 
         Build a KNN Evaluator from the AlgoBase Class of the Surprise Library 
         and define the parameters for the content-based recommender.
-         
-       (for measuring diversity).
         """
         self.evaluator = Evaluator(self.evaluationData, self.rankings)
         dataset = self.evaluator.dataset
         # Compute similarity matrix between all pairs items using alternating least squares.
         self.sim = dataset.simsAlgo.sim
-    
         # Cleaning values NAN in similarity matrix of hotels
         if np.isnan(self.sim).any():
             self.evaluator.dataset.sim = np.where(np.isnan(self.sim ), 0, self.sim )
             self.sim = dataset.simsAlgo.sim        
 
-#%% 3. evaluateRecommenderAlgoritm
-
+#%% 
     def evaluateRecommenderAlgoritm(self):
         """
         Instantiate a raw Surpriselib algorithm to convert it into an Evaluated
@@ -114,28 +104,20 @@ class TouristExperienceRecommender:
         # Implement the nearest neighbors' approach
         contentAlgorithm = ContentRecommenderAlgorithm()
         self.evaluator.AddAlgorithm(contentAlgorithm, "CBF")
-        
         # Just make random recommendations
         Random = NormalPredictor()
         self.evaluator.AddAlgorithm(Random, "Random")
-        # trainset = dataset
-        
         # Throw in an Singular Value Descomposition recommender
         SVDAlgorithm = SVD(random_state=10)
         self.evaluator.AddAlgorithm(SVDAlgorithm, "SVD")
-        
         # Throw in an Singular Value Descomposition recommender
         SVDppAlgorithm = SVDpp(random_state=10)
         self.evaluator.AddAlgorithm(SVDppAlgorithm, "SVDpp")
-        
         algorithms = self.evaluator.algorithms   # Algorithms evaluated list
         algorithms[0].GetName()
-    
         self.evaluator.Evaluate()
         self.results = self.evaluator.results   # Recommender metrics result
-        
         # Cross validation
-                
         results_cv_rmse = []
         results_cv_mae = []
         names_alg = []
@@ -146,7 +128,6 @@ class TouristExperienceRecommender:
             results_cv_rmse.append(list(result_cv['test_rmse']))     
             results_cv_mae.append(list(result_cv['test_mae']))
             names_alg.append(algorithms[i].GetName())
-        
         # plot the results
         fig, ax = plt.subplots(figsize=(7, 4))
         plt.boxplot(results_cv_mae, labels=names_alg, showmeans=True)
@@ -155,7 +136,6 @@ class TouristExperienceRecommender:
         plt.title('Mean Absolute Error with varying Number of Fold')
         plt.savefig(self.figurePath + 'mae_surprise' + '.svg', format='svg')
         plt.show()
-        
         fig, ax = plt.subplots(figsize=(7, 4))
         plt.boxplot(results_cv_rmse, labels=names_alg, showmeans=True)
         plt.ylabel('RMSE', fontsize = 11)
@@ -163,14 +143,26 @@ class TouristExperienceRecommender:
         plt.title('Root Mean Square Error with varying Number of Fold')
         plt.savefig(self.figurePath + 'rmse_surprise' + '.svg', format='svg')
         plt.show()        
-
 #%%
     def cfPrediction(self, name, hotel, rc):
-        
+        """
+        Makes validation of the collaborative filtering algorithms for predicting
+        hotels' Tourist Experiences of the OnToTouTra ontology.
+        Parameters
+        ----------
+        name : String
+            DESCRIPTION. Algorithm name
+        hotel : dataframe
+            DESCRIPTION. Hotels' tourist experiences
+        rc : object
+            DESCRIPTION. Instance to the RecommenderContext class.
+        Returns
+        -------
+        None.
+        """
         hotelRating = self.rd.rating[['userId','hotelID','y']]
         userTest = self.candidateUser.iloc[0][0]
         split = 0.8
-        
         if name == 'CF_CNN':
             cf = RecommenderCF_CNN(hotelRating, hotel)
             result = cf.run_model(userTest, split, self.figurePath)
@@ -186,7 +178,6 @@ class TouristExperienceRecommender:
             self.recommendation.append([result_rec, name, result[0][1]])
             self.results[name] = result[0][1]
     
-
 #%%
     def generateRecommenderReport(self):
         """
@@ -222,7 +213,6 @@ class TouristExperienceRecommender:
                 self.evaluator.algorithms[algo].GetName(),
                 self.results[self.evaluator.algorithms[algo].GetName()]
                 ])
-        
         self.userEmotion = rc.userEmotion
         self.userER = rc.userER
         
@@ -245,14 +235,13 @@ class TouristExperienceRecommender:
         res = mae.index(min(mae))
         print("The best recommender algorithm is " + str(algorithmName[res]))
         self.userRecommendation = self.recommendation[res][0]
-        
         # Recommender plots 
         rp = RecommenderPlots(self.rd, self.results, self.sim, self.figurePath)
         rp.ratingPlot()
         rp.metricPlot()
-
-#%% Init
         
+#%% Init
+  
 if __name__ == "__main__":
     ter = TouristExperienceRecommender()
     hotels = ter.hotels 
@@ -268,4 +257,3 @@ if __name__ == "__main__":
     userER = ter.userER
     userProfile = ter.userProfile
     results = ter.results
-    
