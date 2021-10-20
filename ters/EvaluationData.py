@@ -13,8 +13,6 @@ class EvaluationData:
     """
     Split the hotels dataset in training/testing set and build a
     KNN Evaluator from the AlgoBase Class of the Surprise Library.
-    Use a Leave-One-Out cross validation iterator for providing train/test
-    indices to split data in train test sets.
     """
     
     def __init__(self, data, popularityRankings):
@@ -60,11 +58,6 @@ class EvaluationData:
         print("EvaluationData.GetFullTrainSet ")
         return self.fullTrainSet
 
-#%%    
-    def GetFullAntiTestSet(self):
-        print("EvaluationData.GetFullTrainSet ")
-        return self.fullAntiTestSet
-
 #%%
     def GetTrainSet(self):
         print("EvaluationData.GetTrainSet ")
@@ -74,12 +67,3 @@ class EvaluationData:
     def GetTestSet(self):
         print("EvaluationData.GetTestSet ")
         return self.testSet
-
-#%%    
-    def GetSimilarities(self):
-        print("EvaluationData.GetSimilarities ")
-        return self.simsAlgo
-#%%    
-    def GetPopularityRankings(self):
-        print("EvaluationData.GetPopularityRankings ")
-        return self.rankings

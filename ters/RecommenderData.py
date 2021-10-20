@@ -194,13 +194,9 @@ class RecommenderData:
                         'reviewCategoricalScore', 'hotelDescription']
         self.hotels = hotelFilter[hotelsColumn]         
 
-        self.reviews['emotion'] = self.loadReviewEmotion('rating')
-        # Sort the review dataframe columns 
-        reviewColumn = ['userId','hotelID', 'rating','country','emotion','reviewDate',
-                        'accommodation','accommodationDate','catRating','positiveReview',
-                        'negativeReview']
+        reviewColumn = ['userId','hotelID', 'rating','country']        
         review = self.reviews[reviewColumn]         
-        # Filter the hotels reviews with the hotels selected. (39114 --- 30626)
+        # Filter the hotels reviews with the hotels selected. 
         self.rating = pd.merge(self.hotels.hotelID, review, on = 'hotelID', how ='inner')  # left or inner  
         
         # min and max ratings will be used to normalize the ratings later
