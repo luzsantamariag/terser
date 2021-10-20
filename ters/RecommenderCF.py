@@ -28,7 +28,6 @@ class RecommenderCF:
     """
     Tourist Experiences Recommender based on Collaborative Filtering
     """
-    
     def __init__(self, hotelRating, hotel):
         """
         Default constructor
@@ -47,7 +46,6 @@ class RecommenderCF:
         self.hotel = hotel
         self.embedding_factor = 50
         
-
 #%% 
     def getDataRec(self):
         """
@@ -70,22 +68,17 @@ class RecommenderCF:
         user = self.hotelRating["userId"].unique().tolist()
         self.user2user_encoded = {x: i for i, x in enumerate(user)}
         self.user_encoded2user = {i: x for i, x in enumerate(user)}
-        
         hotel = self.hotelRating["hotelID"].unique().tolist()
         self.hotel2hotel_encoded = {x: i for i, x in enumerate(hotel)}
         self.hotel_encoded2hotel = {i: x for i, x in enumerate(hotel)}
-        
         self.hotelRating["user"] = self.hotelRating["userId"].map(self.user2user_encoded)
         self.hotelRating["hotel"] = self.hotelRating["hotelID"].map(self.hotel2hotel_encoded)
         pd.options.mode.chained_assignment = mode
-        
         num_users = len(self.user_encoded2user)
         num_hotels = len(self.hotel_encoded2hotel)
-        
         self.hotelRating = self.hotelRating.sample(frac=1, random_state=42)
         x = self.hotelRating[["user", "hotel"]].values
         y = self.hotelRating["y"].values
-
         return num_users, num_hotels, x, y
     
 #%% 
@@ -171,9 +164,7 @@ class RecommenderCF:
         num_users, num_hotels, x, y = self.getDataRec()
         x_train, y_train, x_test, y_test = self.split_data(x, y, split)
         self.model = RecommenderNet(num_users, num_hotels, self.embedding_factor)
- 
         plot_model(self.model, to_file= figurePath + "model.png")
-        
         # Compile the model - RMSE
         self.history_RMSE = self.validation_model(
             metrics.RootMeanSquaredError(name='RMSE'), x_train, y_train,
@@ -181,7 +172,6 @@ class RecommenderCF:
         hist = self.history_RMSE
         self.plotMetrics(figurePath, 'RMSE', hist,
                          title = 'Root Mean Squared Error of the CF-Net recommender')      
-
         # Compile the model - MAE
         self.model = RecommenderNet(num_users, num_hotels, self.embedding_factor)
         self.history_MAE = self.validation_model(
@@ -190,16 +180,13 @@ class RecommenderCF:
         hist = self.history_MAE
         self.plotMetrics(figurePath, 'MAE', hist,
                          title = 'Mean Absolute Error of the CF-Net recommender')
-        
         result_metrics = {
             'RMSE': np.mean(self.history_RMSE.history['val_RMSE']),
             'MAE':np.mean(self.history_MAE.history['val_MAE'])}
         results.append([self.prediction(user_id), result_metrics]) 
-         
         return results
-    
 
-#%%  
+#%% 
     def plotMetrics(self, figurePath, name, history, title):
         """
         Precision result plots of TERS.
@@ -230,7 +217,6 @@ class RecommenderCF:
         ax.legend(loc='upper center', bbox_to_anchor=(0.85, 0.95), shadow=True, ncol=1) 
         plt.ylabel('Loss/'+ name)
         plt.xlabel('Epoch')
-        #plt.ylim(0) 
         ax.grid(ls = 'solid')
         plt.savefig(figurePath + 'train_val'+ name + '_CF.svg', format='svg')
         plt.show()        
@@ -254,19 +240,16 @@ class RecommenderCF:
         hotels_visited = self.hotelRating[self.hotelRating.userId == user_id]
         hotels_not_visited = self.hotel[~self.hotel["hotelID"].isin(hotels_visited.hotelID.values)]["hotelID"]         
         hotels_not_visited = list(set(hotels_not_visited).intersection(set(self.hotel2hotel_encoded.keys()))        )
-        
         hotels_not_visited = [[self.hotel2hotel_encoded.get(x)] for x in hotels_not_visited] 
         user_encoder = self.user2user_encoded.get(user_id)    
         user_hotel_array = np.hstack(([[user_encoder]] * len(hotels_not_visited), hotels_not_visited))
-        
         ratings = self.model.predict(user_hotel_array).flatten()
         top_ratings_indices = ratings.argsort()[-10:][::-1]
         recommended_hotelTE = [
             self.hotel_encoded2hotel.get(hotels_not_visited[x][0]) for x in top_ratings_indices]
-        
         return self.hotel[self.hotel["hotelID"].isin(recommended_hotelTE)]
 
-#%%   
+#%%
 class RecommenderNet(Model):
     # Author: Banerjee, Siddhartha. Collaborative Filtering for Movie Recommendations. 2020. 
     # https://keras.io/examples/structured_data/collaborative_filtering_movielens/    

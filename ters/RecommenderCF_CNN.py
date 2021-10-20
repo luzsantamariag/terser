@@ -22,7 +22,6 @@ import pandas as pd
 from sklearn.preprocessing import LabelEncoder 
 from tensorflow.keras import metrics
 
-
 class RecommenderCF_CNN:
     """
     Tourist Experiences Recommender based on Collaborative Fintering and 1D-CNN
@@ -46,7 +45,6 @@ class RecommenderCF_CNN:
         self.hotel = hotel
         self.embedding_factor = 50
         self.dropout_rate = 0.1
-        
 
 #%% 
     def getDataRec(self):
@@ -68,22 +66,19 @@ class RecommenderCF_CNN:
         mode = pd.options.mode.chained_assignment
         pd.options.mode.chained_assignment = None
         userId = LabelEncoder()
-        self.hotelRating['user_id'] = userId.fit_transform(self.hotelRating['userId'].values) # 0 to 5460
+        self.hotelRating['user_id'] = userId.fit_transform(self.hotelRating['userId'].values) 
         self.user = pd.Series(self.hotelRating.user_id.values,index=self.hotelRating.userId).to_dict() 
-               
         item_enc = LabelEncoder()
-        self.hotelRating['hotel'] = item_enc.fit_transform(self.hotelRating['hotelID'].values) # 0 to 354
+        self.hotelRating['hotel'] = item_enc.fit_transform(self.hotelRating['hotelID'].values) 
         self.hotelID_encoded = pd.Series(self.hotelRating.hotel.values,index=self.hotelRating.hotelID).to_dict() 
         self.hotel_encoded = pd.Series(self.hotelRating.hotelID.values,index=self.hotelRating.hotel).to_dict()
         pd.options.mode.chained_assignment = mode
         # Add a new column named 'user_id'
         num_users = len(self.user)
         num_hotels = len(self.hotel)
-                
         self.hotelRating = self.hotelRating.sample(frac=1, random_state=42)
         x = self.hotelRating[["user_id", "hotel"]].values
         y = self.hotelRating["y"].values
-    
         return num_users, num_hotels, x, y
     
 #%% 
@@ -115,7 +110,6 @@ class RecommenderCF_CNN:
         y_train = y[ : int(split * size)]
         x_test = x[int(split * size) :]
         y_test = y[int(split * size) :]          
-             
         return x_train, y_train, x_test, y_test
     
 #%% 
@@ -156,7 +150,7 @@ class RecommenderCF_CNN:
         hotel = Input(shape=(1,), name='hotel')
         userEmbedded = self.embeddingLayer(len(self.hotelRating.user_id.unique()), self.embedding_factor, user)
         hotelEmbedded = self.embeddingLayer(len(self.hotelRating.hotel.unique()), self.embedding_factor, hotel)
-        # Concatenate the embeddings (and remove the useless extra dimension)
+        # Concatenate the embeddings and remove the useless extra dimension
         x = Concatenate()([userEmbedded, hotelEmbedded])
         x = Conv1D(filters = 128, kernel_size = 1) (x) 
         x = MaxPooling1D(pool_size = 1) (x)   
@@ -192,12 +186,10 @@ class RecommenderCF_CNN:
         """
         self.model.compile(optimizer = Adam(lr=0.001), 
                             loss = loss_val, metrics = metric)      
-        
         x_train = pd.DataFrame(x_train, columns = ['user_id', 'hotel'])
         x_test = pd.DataFrame(x_test, columns = ['user_id', 'hotel'])
         y_train = pd.DataFrame(y_train, columns = ['y'])
         y_test = pd.DataFrame(y_test, columns = ['y'])
-        
         history = self.model.fit(
             x = [x_train.user_id, x_train.hotel], y = y_train.y,
             batch_size=64, epochs=10, verbose=1, 
@@ -229,7 +221,6 @@ class RecommenderCF_CNN:
         # Model create  
         self.model = self.recommender()
         plot_model(self.model, to_file = figurePath + "model_TERS_CNN.png")
-         
         # Compile the model - RMSE
         self.history_RMSE = self.validation_model(
             metrics.RootMeanSquaredError(name='RMSE'), x_train, y_train,
@@ -245,14 +236,11 @@ class RecommenderCF_CNN:
         hist = self.history_MAE
         self.plotMetrics(figurePath, 'MAE', hist,
                          title = 'Mean Absolute Error of the CNN-based recommender')
-        
         result_metrics = {
             'RMSE': np.mean(self.history_RMSE.history['val_RMSE']),
             'MAE':np.mean(self.history_MAE.history['val_MAE'])}
         results.append([self.prediction(user_id), result_metrics]) 
-
         return results
-
 
 #%% 
     def plotMetrics(self, figurePath, name, history, title):
@@ -313,12 +301,10 @@ class RecommenderCF_CNN:
         )
         hotels_not_visited = pd.DataFrame([[self.hotelID_encoded.get(x)] for x in hotels_not_visited], columns = ['hotel']) 
         hotels_not_visited['user_id'] = uidTest
-        
         # Prediction over the hotels list that the candidate user has not yet visited.
         ratings = self.model.predict([hotels_not_visited.user_id, hotels_not_visited.hotel]).flatten()
         hotels_not_visited['ratingEstimated'] = ratings 
         hotels_not_visited = hotels_not_visited.sort_values(by='ratingEstimated', ascending=False)
         hotels_not_visited['hotelID'] = hotels_not_visited['hotel'].map(self.hotel_encoded)
         recommended_hotelTE = self.hotel[self.hotel["hotelID"].isin(hotels_not_visited.hotelID)]
-
         return pd.merge(hotels_not_visited, recommended_hotelTE).head(10)          
