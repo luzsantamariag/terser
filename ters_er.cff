@@ -1,0 +1,41 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+authors:
+- family-names: "Santamaria-Granados"
+  given-names: "Luz"
+  orcid: "https://orcid.org/0000-0003-3697-7852"
+- family-names: "Mendoza-Moreno"
+  given-names: "Juan Francisco"
+  orcid: "https://orcid.org/0000-0003-1480-0845"
+title: "Tourist Experiences Recommender System Based on Emotion Recognition with Wearable Data"
+version: 1.0.0
+date-released: 2021-10-01
+url: "https://github.com/luzsantamariag/terser"
+preferred-citation:
+  type: article
+  authors:
+  - family-names: "Santamaria-Granados"
+    given-names: "Luz"
+    orcid: "https://orcid.org/0000-0003-3697-7852"  
+  - family-names: "Mendoza-Moreno"
+    given-names: "Juan Francisco"
+    orcid: "https://orcid.org/0000-0003-1480-0845"
+  - family-names: "Chantre-Astaiza"
+    given-names: "Angela"
+    orcid: "https://orcid.org/0000-0002-4031-3816"
+  - family-names: "Munoz-Organero"
+    given-names: "Mario"
+    orcid: "https://orcid.org/0000-0003-4199-2002"
+  - family-names: "Ramirez-Gonzalez"
+    given-names: "Gustavo"
+    orcid: "https://orcid.org/0000-0002-1338-8820"
+  doi: 10.3390/s21237854
+  journal: "Sensors"
+  month: 11
+  start: 1
+  end: 28
+  title: "Tourist Experiences Recommender System Based on Emotion Recognition with Wearable Data"
+  issue: 21
+  volume: 23
+  year: 2021
+  url: "https://www.mdpi.com/1424-8220/21/23/7854"
